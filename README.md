@@ -1,42 +1,46 @@
-RasPi Check [![Build Status](https://travis-ci.org/eidottermihi/rpicheck.svg?branch=master)](https://travis-ci.org/eidottermihi/rpicheck)
-========
+# CheckMyRaspi
 
-:construction: Looking for adoption :construction:
-------------
+Android-App, die deine Raspberry Pis (und andere Linux-Rechner) per SSH abfragt und in einer
+Übersicht zeigt – **mit Standort**, damit du jeden Pi auch wiederfindest.
 
-RasPi Check started as a little personal project, from which I've never thought, that it would reach so many Raspberry Pi ® users. However, I no longer have the time (and patience) to keep this project up-2-date and especially to keep up with Google Play Store guidelines and Android API changes.
+Ein MCHWRK-Projekt. Neubau auf Basis der Idee und der SSH-Abfragen von
+[RasPi Check](https://github.com/eidottermihi/rpicheck) von Michael Prankl (MIT-Lizenz; seit 2023 archiviert).
+Der ursprüngliche Code ist in der Git-Historie erhalten (Tag `upstream-final`).
 
-This being said, **version 1.8.14 is the final release** of RasPi Check (available on [F-Droid](https://f-droid.org/repository/browse/?fdid=de.eidottermihi.raspicheck) and on [GitHub Releases](https://github.com/eidottermihi/rpicheck/releases/tag/v1.8.14)).
+## Funktionen
 
-If you have experience in maintaining an Android app & would like to take over the (outdated) codebase of RasPi Check, please reach out to me.
+- **Übersicht** aller Geräte als Karten, gruppiert und filterbar nach Standort, mit Suche
+  (Name, Standort, IP, Seriennummer, MAC …). Ein neu eingetragener Pi erscheint sofort dort.
+- **Standort**: hierarchisch („Keller › Rack › oben“) mit Vorschlägen, Freitext „So findest du ihn“
+  und Standortfoto (Kamera oder Galerie).
+- **Erkennung**: Modell, Seriennummer und MAC werden beim Einrichten gemerkt – der Pi bleibt
+  identifizierbar, auch wenn sich die IP ändert.
+- **Zustand**: Temperatur, Last, Takt, Kernspannung, Lüfter, Uptime, **Unterspannung/Drosselung**
+  (`vcgencmd get_throttled`), RAM/Swap/Datenträger, Netzwerk inkl. WLAN-Signal, OS/Kernel/Firmware,
+  ausstehende **apt-Updates** und „Neustart nötig“.
+- **Hinweise** als Badges (Unterspannung, heiß, Platte voll, Updates …).
+- **Neustart / Herunterfahren** über sudo – das Passwort geht über stdin, nie über die Kommandozeile.
 
-RasPi Check
-------------
+## Sicherheit (gegenüber RasPi Check)
 
-![RasPi Check Store Graphic](graphics/web_1024_500.jpg)
-
-Android app for checking the status of your Raspberry Pi ® or other SBCs.
-
-The goal of this Android app is to show the user the current system status of a running Raspberry Pi ®.
-
-RasPi Check uses a SSH connection (using [SSHJ](https://github.com/hierynomus/sshj)) to connect to your Raspberry Pi ® and queries the information using Linux utilities like `ps`, `df` or the [`/proc` virtual filesystem](https://www.tldp.org/LDP/Linux-Filesystem-Hierarchy/html/proc.html). This app also works on other SBCs via [fake_vcgencmd](https://github.com/clach04/fake_vcgencmd), e.g. when running [Armbian](https://www.armbian.com).
-
-|   |   |   |
+| | RasPi Check | CheckMyRaspi |
 |---|---|---|
-![01-rpicheck.png](metadata/en-US/phoneScreenshots/01-rpicheck.png) | ![02-rpicheck.png](metadata/en-US/phoneScreenshots/02-rpicheck.png) | ![03-rpicheck.png](metadata/en-US/phoneScreenshots/03-rpicheck.png)
+| Passwörter/Schlüssel | Klartext in SQLite, im Backup | AES-GCM mit Android-Keystore-Schlüssel, nicht im Backup |
+| Host-Key | jeder akzeptiert (`PromiscuousVerifier`) | Trust-on-first-use, Wechsel wird blockiert und angezeigt |
+| Schlüsseldatei | Dateipfad (bricht mit Scoped Storage) | Inhalt importiert (Datei oder Zwischenablage) |
+| SSH-Sitzungen pro Abfrage | ~15 | 1 (ein Skript, siehe `StatusScript.kt`) |
 
+## Bauen
 
-Download
-------------
+```bash
+export JAVA_HOME=/home/andi/dev-tools/jdk-21
+./gradlew testDebugUnitTest lintDebug assembleRelease
+```
 
-<a href="https://f-droid.org/repository/browse/?fdid=de.eidottermihi.raspicheck" target="_blank">
-<img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="90"/></a>
+Test-„Raspi“ per Docker: `tools/fakepi/run.sh`, danach
+`CMR_SSH_TEST=1 CMR_SSH_KEY=tools/fakepi/id_test ./gradlew testDebugUnitTest` für die SSH-Integrationstests.
+Details in `docs/TESTPLAN.md`.
 
-[GitHub Releases](https://github.com/eidottermihi/rpicheck/releases)
+## Lizenz
 
-
-Copyright Information
-------------
-The app logo is a derivative of "Raspberry.ico" by [Martina Šmejkalová](http://www.sireasgallery.com/), used under [CC BY](http://creativecommons.org/licenses/by/2.0/). The app logo is licensed under [CC BY](http://creativecommons.org/licenses/by/2.0/) by [Michael Prankl](https://github.com/eidottermihi).
-
-'RasPi' is one of the Rasberry Pi ® abbreviations. For more information visit [http://www.raspberrypi.org](http://www.raspberrypi.org). Raspberry Pi is a trademark of the Raspberry Pi Foundation.
+MIT – siehe `LICENSE`.

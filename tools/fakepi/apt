@@ -1,0 +1,2 @@
+#!/bin/sh
+[ "$1" = list ] && printf 'Listing...\nlibc6/stable 2.36-9+deb12u10 arm64 [upgradable from: 2.36-9+deb12u9]\nopenssl/stable 3.0.17 arm64 [upgradable from: 3.0.16]\ncurl/stable 7.88.1-10+deb12u14 arm64 [upgradable from: 7.88.1-10+deb12u12]\n'

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Gerätedaten und Standortfotos dürfen ins Backup; Geheimnisse liegen in noBackupFilesDir
+     und sind ohnehin mit einem Keystore-Schlüssel verschlüsselt, der das Gerät nie verlässt. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="file" path="devices.json" />
+        <include domain="file" path="photos/" />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="file" path="devices.json" />
+        <include domain="file" path="photos/" />
+    </device-transfer>
+</data-extraction-rules>

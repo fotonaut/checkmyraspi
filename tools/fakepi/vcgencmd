@@ -1,0 +1,8 @@
+#!/bin/sh
+case "$1" in
+  get_throttled) echo "throttled=0x50000" ;;
+  measure_volts) echo "volt=0.8563V" ;;
+  measure_clock) echo "frequency(48)=1800457088" ;;
+  version) echo "Oct 17 2025 10:52:42"; echo "Copyright (c) 2012 Broadcom" ;;
+  *) exit 0 ;;
+esac
