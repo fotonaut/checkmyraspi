@@ -43,6 +43,13 @@ class Photos(private val context: Context) {
         name
     }.getOrNull()
 
+    /** Übernimmt ein bereits verkleinertes JPEG (z. B. aus einem Import). */
+    fun writeJpeg(bytes: ByteArray): String? = runCatching {
+        val name = "loc-${UUID.randomUUID()}.jpg"
+        file(name).writeBytes(bytes)
+        name
+    }.getOrNull()
+
     fun delete(name: String?) {
         if (name != null) file(name).delete()
     }

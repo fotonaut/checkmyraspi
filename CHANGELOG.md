@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.0 – 16. November 2026
+
+- Export/Import der Geräteliste (inkl. Standort, Notizen, Fotos); Zugangsdaten optional, mit Passphrase verschlüsselt.
+- „Zugangsdaten fehlen – bitte bearbeiten“ für Geräte ohne Passwort/Schlüssel.
+
 ## 1.0.1 – 16. November 2026
 
 - Verständliche Fehlermeldungen bei nicht erreichbaren Geräten (mit IP und wahrscheinlichem Grund).

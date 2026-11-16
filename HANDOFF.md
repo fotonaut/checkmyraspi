@@ -1,4 +1,4 @@
-# Handoff – CheckMyRaspi (Stand 2026-11-16, 1.0.1 live)
+# Handoff – CheckMyRaspi (Stand 2026-11-16, 1.1.0 live)
 
 ## Erledigt (0.1.0)
 - Fork `fotonaut/checkmyraspi` auf GitHub (Parent eidottermihi/rpicheck, archiviert). Lokal: Branch `main` =
@@ -22,6 +22,16 @@
 - SHA-256 aca08232…1d1d, live + auf dem OPPO installiert.
 - mchwrk.de-Projektseite https://mchwrk.de/projekte/checkmyraspi/ (WP-ID 45, menu_order 14, 🍓) via
   `../wordpress-theme/migration/add-project-checkmyraspi.php`.
+
+## 1.1.0 (2026-11-16) – Export/Import
+- `data/Transfer.kt`: JSON-Exportdatei (Geräte, Fotos als Base64); Zugangsdaten optional mit Passphrase
+  (PBKDF2-HMAC-SHA256 120k → AES-256-GCM). Import upsert per ID; ohne Zugangsdaten → „Zugangsdaten fehlen“.
+- Menü ⋮ in der Übersicht + „Aus Exportdatei importieren“ im leeren Zustand. Import-Filter `*/*` (LineageOS-
+  Dateiauswahl auf dem Nexus 7 bot die .json mit engem MIME-Filter nicht an), Inhalt wird geprüft.
+- Real: OPPO → Export (ohne Zugangsdaten) → Nexus 7 (09edbf66, LineageOS 18.1) importiert hausrat/vitopi/ubuntu.
+  Auf dem Nexus fehlen noch die Passwörter (bewusst nicht von mir eingegeben). Exportdatei liegt auf beiden in Download/.
+- Emulator: Export mit Passphrase → `pm clear` → Import → Login klappt (neuer Keystore-Schlüssel); falsche Passphrase abgelehnt.
+- Gotcha: DocumentsUI auf dem Nexus ignoriert `adb input tap` auf Listeneinträgen → per DPAD/ENTER steuern.
 
 ## Noch nicht gemacht
 - Neustart/Herunterfahren an einem echten Pi; Schlüssel-Login mit echter Datei; Standortfoto am Handy.

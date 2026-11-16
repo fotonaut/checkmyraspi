@@ -4,6 +4,9 @@ import de.mchwrk.checkmyraspi.data.AuthType
 import de.mchwrk.checkmyraspi.data.Device
 import de.mchwrk.checkmyraspi.data.DeviceRepository
 import de.mchwrk.checkmyraspi.data.DeviceSecrets
+import de.mchwrk.checkmyraspi.data.ImportPreview
+import de.mchwrk.checkmyraspi.data.ImportResult
+import de.mchwrk.checkmyraspi.data.Transfer
 import de.mchwrk.checkmyraspi.data.Photos
 import de.mchwrk.checkmyraspi.data.Reachability
 import de.mchwrk.checkmyraspi.data.SecretStore
@@ -88,8 +91,48 @@ class AppController(
         scope.launch { refreshNow(id) }
     }
 
+    fun hasCredentials(d: Device, s: DeviceSecrets = secrets.get(d.id)) = when (d.authType) {
+        AuthType.PASSWORD -> !s.password.isNullOrEmpty()
+        AuthType.KEY -> !s.privateKey.isNullOrEmpty()
+    }
+
+    /** Exportdatei als JSON; mit Passphrase inkl. verschlüsselter Zugangsdaten. */
+    fun exportJson(passphrase: String?): String = Transfer.export(
+        devices = devices.devices.value,
+        secrets = secrets::get,
+        photoDir = photos.dir,
+        passphrase = passphrase,
+        app = "CheckMyRaspi ${de.mchwrk.checkmyraspi.BuildConfig.VERSION_NAME}",
+        now = now(),
+    )
+
+    fun previewImport(text: String): ImportPreview = Transfer.parse(text)
+
+    /** @param passphrase null = ohne Zugangsdaten übernehmen. */
+    fun applyImport(preview: ImportPreview, passphrase: String?): ImportResult {
+        val s = if (passphrase != null && preview.file.secrets != null) Transfer.decryptSecrets(preview.file.secrets, passphrase) else null
+        val t = now()
+        val result = Transfer.apply(
+            preview, s,
+            existing = devices::get,
+            writePhoto = photos::writeJpeg,
+            upsert = { d, sec ->
+                val old = devices.get(d.id)
+                if (old?.photo != null && old.photo != d.photo) photos.delete(old.photo)
+                devices.upsert(d.copy(createdAt = old?.createdAt ?: d.createdAt.takeIf { it > 0 } ?: t, updatedAt = t))
+                if (sec != null) secrets.put(d.id, sec)
+            },
+        )
+        refreshAll()
+        return result
+    }
+
     suspend fun refreshNow(id: String) {
         val device = devices.get(id) ?: return
+        if (!hasCredentials(device)) {
+            snapshots.update(id) { it.copy(reachability = Reachability.ERROR, message = "Zugangsdaten fehlen – bitte bearbeiten", checkedAt = now()) }
+            return
+        }
         if (id in _refreshing.value) return
         _refreshing.update { it + id }
         try {

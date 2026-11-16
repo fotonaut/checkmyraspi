@@ -24,6 +24,14 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.FileDownload
+import androidx.compose.material.icons.outlined.FileUpload
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.TextButton
 import androidx.compose.material.icons.outlined.DeveloperBoard
 import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material.icons.outlined.Refresh
@@ -89,6 +97,10 @@ fun OverviewScreen(c: AppController, onOpen: (String) -> Unit, onAdd: () -> Unit
     val shown = groups.filter { filter == null || it.first == filter }
     val online = devices.count { snapshots[it.id]?.reachability == Reachability.ONLINE }
     val allGroups = Locations.group(devices).map { it.first }
+    val snackbar = remember { SnackbarHostState() }
+    val (transfer, transferDialogs) = rememberTransfer(c, snackbar)
+    var menu by remember { mutableStateOf(false) }
+    transferDialogs()
 
     Scaffold(
         topBar = {
@@ -115,6 +127,23 @@ fun OverviewScreen(c: AppController, onOpen: (String) -> Unit, onAdd: () -> Unit
                             }
                         }
                     }
+                    Box {
+                        IconButton(onClick = { menu = true }) { Icon(Icons.Outlined.MoreVert, contentDescription = "Mehr") }
+                        DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                            if (devices.isNotEmpty()) {
+                                DropdownMenuItem(
+                                    text = { Text("Exportieren …") },
+                                    leadingIcon = { Icon(Icons.Outlined.FileUpload, null) },
+                                    onClick = { menu = false; transfer.startExport() },
+                                )
+                            }
+                            DropdownMenuItem(
+                                text = { Text("Importieren …") },
+                                leadingIcon = { Icon(Icons.Outlined.FileDownload, null) },
+                                onClick = { menu = false; transfer.startImport() },
+                            )
+                        }
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
             )
@@ -128,10 +157,11 @@ fun OverviewScreen(c: AppController, onOpen: (String) -> Unit, onAdd: () -> Unit
                 )
             }
         },
+        snackbarHost = { SnackbarHost(snackbar) },
         containerColor = MaterialTheme.colorScheme.background,
     ) { padding ->
         if (devices.isEmpty()) {
-            EmptyState(Modifier.padding(padding), onAdd)
+            EmptyState(Modifier.padding(padding), onAdd, onImport = transfer.startImport)
             return@Scaffold
         }
         LazyVerticalGrid(
@@ -285,7 +315,7 @@ fun statusLine(s: Snapshot?, now: Long): String = when (s?.reachability ?: Reach
 }
 
 @Composable
-private fun EmptyState(modifier: Modifier, onAdd: () -> Unit) {
+private fun EmptyState(modifier: Modifier, onAdd: () -> Unit, onImport: () -> Unit) {
     Column(
         modifier.fillMaxSize().padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -311,6 +341,12 @@ private fun EmptyState(modifier: Modifier, onAdd: () -> Unit) {
             Icon(Icons.Outlined.Add, null)
             Spacer(Modifier.width(8.dp))
             Text("Raspi hinzufügen")
+        }
+        Spacer(Modifier.height(8.dp))
+        TextButton(onClick = onImport) {
+            Icon(Icons.Outlined.FileDownload, null)
+            Spacer(Modifier.width(8.dp))
+            Text("Aus Exportdatei importieren")
         }
     }
 }

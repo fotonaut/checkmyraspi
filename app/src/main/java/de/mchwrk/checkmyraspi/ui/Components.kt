@@ -15,7 +15,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
@@ -136,7 +140,9 @@ fun SecretField(
     label: String,
     modifier: Modifier = Modifier,
     supporting: String? = null,
+    imeAction: ImeAction = ImeAction.Default,
 ) {
+    val focus = LocalFocusManager.current
     var visible by rememberSaveable { mutableStateOf(false) }
     OutlinedTextField(
         value = value,
@@ -144,7 +150,11 @@ fun SecretField(
         label = { Text(label) },
         singleLine = true,
         visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = imeAction),
+        keyboardActions = KeyboardActions(
+            onNext = { focus.moveFocus(FocusDirection.Down) },
+            onDone = { focus.clearFocus() },
+        ),
         trailingIcon = {
             IconButton(onClick = { visible = !visible }) {
                 Icon(

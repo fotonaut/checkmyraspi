@@ -38,11 +38,11 @@
       <p class="lead">CheckMyRaspi fragt deine Raspberry Pis per SSH ab und zeigt sie in einer Übersicht – sortiert nach Standort, mit Foto und Notiz. So siehst du sofort, welcher Pi zu heiß läuft, zu wenig Strom bekommt oder Updates braucht. Und du weißt, wo du ihn findest.</p>
       <!-- release:begin -->
       <div class="cta">
-        <a class="btn primary" href="downloads/checkmyraspi-1.0.1.apk" download>⬇ APK herunterladen</a>
+        <a class="btn primary" href="downloads/checkmyraspi-1.1.0.apk" download>⬇ APK herunterladen</a>
         <a class="btn secondary" href="#installation">Installation</a>
       </div>
-      <p class="meta">Version 1.0.1 · 16. November 2026 · 5,0 MB · Android 8 oder neuer</p>
-      <p class="meta">SHA-256: <code class="hash">aca0823260225f7cdc110d8e2d87882f5a252a741664fdc9c0524431cd061d1d</code></p>
+      <p class="meta">Version 1.1.0 · 16. November 2026 · 5,0 MB · Android 8 oder neuer</p>
+      <p class="meta">SHA-256: <code class="hash">7527851e471c10c7cc143bbd06f37c665cd2311444949ebb57d1e0dcfd0d3f2d</code></p>
       <!-- release:end -->
     </div>
     <div class="shots">
@@ -110,7 +110,8 @@
           <li>keine Cloud – die App spricht nur mit den Geräten, die du einträgst</li>
           <li>Passwörter und Schlüssel landen nie im Backup</li></ul></div>
       <div class="card"><h3>Berechtigungen</h3>
-        <ul><li><strong>Internet / Netzwerkstatus</strong> – SSH-Verbindungen zu deinen eigenen Geräten</li>
+        <ul><li><strong>Keine Speicher-Berechtigung</strong> – Export und Import laufen über die Dateiauswahl von Android</li>
+          <li><strong>Internet / Netzwerkstatus</strong> – SSH-Verbindungen zu deinen eigenen Geräten</li>
           <li>Keine Kamera-Berechtigung: Standortfotos nimmt die Kamera-App auf, die Galerie-Auswahl braucht keine Freigabe</li></ul></div>
     </div>
   </section>
@@ -144,6 +145,13 @@
 
   <section aria-labelledby="changelog">
     <div class="section-head"><h2 id="changelog">Changelog</h2></div>
+    <div class="card release">
+      <h3>1.1.0 <small>16. November 2026</small></h3>
+      <ul>
+        <li>Export und Import (Menü ⋮ in der Übersicht): alle Geräte mit Standort, Notizen und Fotos als Datei – zum Umzug aufs Tablet oder als Sicherung. Zugangsdaten auf Wunsch mit, dann mit einer eigenen Passphrase verschlüsselt.</li>
+        <li>Geräte ohne Zugangsdaten (z. B. nach einem Import) zeigen „Zugangsdaten fehlen – bitte bearbeiten“ statt eines Anmeldefehlers.</li>
+      </ul>
+    </div>
     <div class="card release">
       <h3>1.0.1 <small>16. November 2026</small></h3>
       <ul>
