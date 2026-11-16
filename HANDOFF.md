@@ -1,4 +1,4 @@
-# Handoff – CheckMyRaspi (Stand 2026-11-16, 1.0.0 live)
+# Handoff – CheckMyRaspi (Stand 2026-11-16, 1.0.1 live)
 
 ## Erledigt (0.1.0)
 - Fork `fotonaut/checkmyraspi` auf GitHub (Parent eidottermihi/rpicheck, archiviert). Lokal: Branch `main` =
@@ -15,9 +15,16 @@
 - Website-Screenshots aus dem Emulator mit drei Demo-Containern (Fake-Modell über /sys/firmware-Bind-Mount,
   dafür `--security-opt systempaths=unconfined --security-opt apparmor=unconfined`).
 
+## 1.0.1 (2026-11-16) – nach erstem Test mit echten Pis
+- Andreas' OPPO: hausrat (Pi 3 B, Büro) und vitopi (Pi Zero W, Raspbian Buster, Keller) laufen, alle Werte plausibel.
+- Klartext-Fehler bei nicht erreichbaren Geräten (EHOSTUNREACH/ECONNREFUSED/Timeout, mit IP); Badge „OS ohne
+  Sicherheitsupdates“ (Debian-Codename → EOL-Datum in `Health`); „1 Kern“.
+- SHA-256 aca08232…1d1d, live + auf dem OPPO installiert.
+- mchwrk.de-Projektseite https://mchwrk.de/projekte/checkmyraspi/ (WP-ID 45, menu_order 14, 🍓) via
+  `../wordpress-theme/migration/add-project-checkmyraspi.php`.
+
 ## Noch nicht gemacht
-- Kein mchwrk.de-Projekteintrag (WordPress-CPT, Muster: wordpress-theme/migration/add-project-enshu.php).
-- Echter-Pi-Test (docs/TESTPLAN.md).
+- Neustart/Herunterfahren an einem echten Pi; Schlüssel-Login mit echter Datei; Standortfoto am Handy.
 
 ## Ideen für die nächsten Versionen
 1. QR-Etikett zum Aufkleben → öffnet den Eintrag direkt.

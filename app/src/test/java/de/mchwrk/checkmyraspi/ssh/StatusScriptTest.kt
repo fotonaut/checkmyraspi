@@ -188,6 +188,15 @@ class StatusScriptTest {
         assertThat(s.interfaces).isNotEmpty()
     }
 
+    @Test fun `socket errors become plain german messages with ip`() {
+        val noRoute = java.net.ConnectException("failed to connect to casanawie/192.168.178.83 (port 22) from /192.168.178.20 (port 48250) after 8000ms: isConnected failed: EHOSTUNREACH (No route to host)")
+        assertThat(unreachableMessage(noRoute, 22)).isEqualTo("Gerät antwortet nicht (192.168.178.83) – ausgeschaltet oder in einem anderen Netz?")
+        val refused = java.net.ConnectException("failed to connect to pi/10.0.0.5 (port 22) from /10.0.0.2 (port 1) after 3ms: isConnected failed: ECONNREFUSED (Connection refused)")
+        assertThat(unreachableMessage(refused, 22)).isEqualTo("Gerät erreichbar (10.0.0.5), aber SSH auf Port 22 ist nicht aktiv.")
+        assertThat(unreachableMessage(java.net.ConnectException("Connection refused"), 2222)).isEqualTo("Gerät erreichbar, aber SSH auf Port 2222 ist nicht aktiv.")
+        assertThat(unreachableMessage(java.net.SocketTimeoutException("connect timed out"), 22)).startsWith("Keine Antwort – Zeitüberschreitung")
+    }
+
     @Test fun `sha256 fingerprint uses openssh format`() {
         // echo -n "abc" | sha256sum → ba7816bf…; Base64 ohne Padding
         assertThat(Fingerprints.sha256("abc".toByteArray()))

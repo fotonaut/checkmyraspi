@@ -51,13 +51,31 @@ enum class PowerAction(val command: String) {
 /** Fehler mit deutscher Klartext-Meldung für die Oberfläche. */
 sealed class SshFailure(message: String, cause: Throwable? = null) : Exception(message, cause) {
     class UnknownHost(host: String) : SshFailure("Host „$host“ nicht gefunden.")
-    class Unreachable(cause: Throwable) : SshFailure("Nicht erreichbar (${cause.message ?: cause.javaClass.simpleName}).", cause)
+    class Unreachable(cause: Throwable, port: Int = 22) : SshFailure(unreachableMessage(cause, port), cause)
     class AuthFailed : SshFailure("Anmeldung abgelehnt – Benutzer, Passwort oder Schlüssel prüfen.")
     class BadKey(cause: Throwable) : SshFailure("Privater Schlüssel konnte nicht gelesen werden (Passphrase?).", cause)
     class HostKeyChanged(val expected: String, val actual: HostKey) :
         SshFailure("Host-Schlüssel hat sich geändert! Erwartet $expected, erhalten ${actual.fingerprint}.")
     class SudoFailed(detail: String) : SshFailure("Befehl fehlgeschlagen: $detail")
     class Transport(cause: Throwable) : SshFailure("Verbindungsfehler: ${cause.message ?: cause.javaClass.simpleName}", cause)
+}
+
+/** Übersetzt Socket-Fehler in Klartext; die aufgelöste IP hilft beim Wiederfinden. */
+internal fun unreachableMessage(cause: Throwable, port: Int): String {
+    val raw = cause.message.orEmpty()
+    val ip = Regex("""/(\d{1,3}(?:\.\d{1,3}){3}|[0-9a-fA-F:]{3,})\b""").find(raw)?.groupValues?.get(1)
+    val at = ip?.let { " ($it)" } ?: ""
+    return when {
+        raw.contains("EHOSTUNREACH") || raw.contains("No route", true) || raw.contains("Keine Route", true) ->
+            "Gerät antwortet nicht$at – ausgeschaltet oder in einem anderen Netz?"
+        raw.contains("ECONNREFUSED") || raw.contains("refused", true) ->
+            "Gerät erreichbar$at, aber SSH auf Port $port ist nicht aktiv."
+        raw.contains("ENETUNREACH") || raw.contains("Network is unreachable", true) ->
+            "Kein passendes Netz – WLAN oder VPN prüfen."
+        cause is java.net.SocketTimeoutException || raw.contains("timed out", true) || raw.contains("after ") ->
+            "Keine Antwort$at – Zeitüberschreitung. Ausgeschaltet oder Firewall?"
+        else -> "Nicht erreichbar$at (${raw.ifEmpty { cause.javaClass.simpleName }})."
+    }
 }
 
 object Fingerprints {
@@ -169,11 +187,11 @@ class RaspiClient(
             } catch (e: UnknownHostException) {
                 throw SshFailure.UnknownHost(target.host)
             } catch (e: SocketTimeoutException) {
-                throw SshFailure.Unreachable(e)
+                throw SshFailure.Unreachable(e, target.port)
             } catch (e: ConnectException) {
-                throw SshFailure.Unreachable(e)
+                throw SshFailure.Unreachable(e, target.port)
             } catch (e: NoRouteToHostException) {
-                throw SshFailure.Unreachable(e)
+                throw SshFailure.Unreachable(e, target.port)
             }
             authenticate(client, target)
             val hostKey = verifier.presented ?: throw SshFailure.Transport(IOException("Kein Host-Schlüssel"))

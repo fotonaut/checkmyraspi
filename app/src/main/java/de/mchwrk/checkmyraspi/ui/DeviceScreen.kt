@@ -309,7 +309,7 @@ private fun VitalsCard(s: RaspiStatus) {
     SectionCard("Zustand") {
         KeyValue("Temperatur", s.cpuTempC?.let(Format::temp))
         KeyValue("Last", listOfNotNull(s.load1, s.load5, s.load15).takeIf { it.isNotEmpty() }
-            ?.joinToString(" · ") { Format.load(it) }?.plus(s.cpuCount?.let { "  ($it Kerne)" } ?: ""))
+            ?.joinToString(" · ") { Format.load(it) }?.plus(s.cpuCount?.let { "  ($it ${if (it == 1) "Kern" else "Kerne"})" } ?: ""))
         KeyValue("CPU-Takt", s.armFreqHz?.let(Format::mhz))
         KeyValue("Kernspannung", s.coreVolts?.let(Format::volts))
         KeyValue("Lüfter", s.fanRpm?.let { "$it U/min" })
@@ -383,6 +383,12 @@ private fun SystemCard(s: RaspiStatus) {
         KeyValue("Modell", s.model)
         KeyValue("Hostname", s.hostname, mono = true)
         KeyValue("Betriebssystem", s.os)
+        Health.endOfLife(s.os)?.let {
+            Text(
+                "„${it.replaceFirstChar { c -> c.uppercase() }}“ bekommt keine Sicherheitsupdates mehr – ein Upgrade oder eine Neuinstallation mit aktuellem Raspberry Pi OS lohnt sich.",
+                style = MaterialTheme.typography.bodySmall, color = Mchwrk.colors.warn,
+            )
+        }
         KeyValue("Kernel", s.kernel, mono = true)
         KeyValue("Architektur", s.arch, mono = true)
         KeyValue("Firmware", s.firmware)

@@ -90,6 +90,16 @@ class DataTest {
         assertThat(Health.issues(RaspiStatus(throttledRaw = 0x10000)).single().text).isEqualTo("Unterspannung seit Boot")
     }
 
+    @Test fun `flags debian releases without security updates`() {
+        val day = java.time.LocalDate.parse("2026-11-16")
+        assertThat(Health.endOfLife("Raspbian GNU/Linux 10 (buster)", day)).isEqualTo("buster")
+        assertThat(Health.endOfLife("Debian GNU/Linux 11 (bullseye)", day)).isEqualTo("bullseye")
+        assertThat(Health.endOfLife("Debian GNU/Linux 11 (bullseye)", java.time.LocalDate.parse("2026-08-01"))).isNull()
+        assertThat(Health.endOfLife("Debian GNU/Linux 12 (bookworm)", day)).isNull()
+        assertThat(Health.endOfLife(null, day)).isNull()
+        assertThat(Health.issues(RaspiStatus(os = "Raspbian GNU/Linux 10 (buster)"), day).single().text).isEqualTo("OS ohne Sicherheitsupdates")
+    }
+
     @Test fun `format helpers`() {
         assertThat(Format.uptime(93784)).isEqualTo("1 T 2 h")
         assertThat(Format.uptime(300)).isEqualTo("5 min")
