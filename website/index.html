@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CheckMyRaspi – Raspberry Pis im Blick, mit Standort</title>
+<meta name="description" content="CheckMyRaspi zeigt alle deine Raspberry Pis in einer Übersicht – Temperatur, Unterspannung, Speicher, Updates – und merkt sich, wo jeder steht. Per SSH, ohne Cloud, ohne Konto.">
+<meta name="theme-color" content="#e8590c">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/style.css?v=1">
+<meta property="og:title" content="CheckMyRaspi">
+<meta property="og:description" content="Alle Raspberry Pis im Blick – und du weißt, wo sie stehen.">
+<meta property="og:image" content="https://checkmyraspi.mchwrk.de/assets/screen-overview.png">
+<style>
+  .split { display: grid; grid-template-columns: minmax(0, 260px) 1fr; gap: 24px; align-items: center; }
+  .split img { width: 100%; border-radius: 28px; border: 1px solid var(--line); }
+  @media (max-width: 720px) { .split { grid-template-columns: 1fr; } .split img { max-width: 260px; margin: 0 auto; } }
+  table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+  th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 0.85rem; }
+  td:first-child { font-weight: 600; }
+  .tbl { overflow-x: auto; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="brand" href="https://mchwrk.de"><span class="brand-mark">m</span>mchwrk</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div>
+      <div class="app-id"><img src="assets/icon.svg" alt=""><span>Android-App · SSH</span></div>
+      <h1>Alle Pis im Blick. <em>Und wo sie stehen.</em></h1>
+      <p class="lead">CheckMyRaspi fragt deine Raspberry Pis per SSH ab und zeigt sie in einer Übersicht – sortiert nach Standort, mit Foto und Notiz. So siehst du sofort, welcher Pi zu heiß läuft, zu wenig Strom bekommt oder Updates braucht. Und du weißt, wo du ihn findest.</p>
+      <!-- release:begin -->
+      <div class="cta">
+        <a class="btn primary" href="downloads/checkmyraspi-1.0.0.apk" download>⬇ APK herunterladen</a>
+        <a class="btn secondary" href="#installation">Installation</a>
+      </div>
+      <p class="meta">Version 1.0.0 · 16. November 2026 · 5,0 MB · Android 8 oder neuer</p>
+      <p class="meta">SHA-256: <code class="hash">c26fc9b5efc3948dda6e2cdff7737e158e57732f952173ab036993921217561b</code></p>
+      <!-- release:end -->
+    </div>
+    <div class="shots">
+      <img src="assets/screen-overview.png" alt="Übersicht: Raspis gruppiert nach Büro, Garage und Keller, mit Temperatur, Standort und Hinweisen wie Unterspannung oder Updates" width="540" height="1200">
+      <img src="assets/screen-detail.png" alt="Detailansicht eines Pi: Standort mit Notiz, Zustand mit Temperatur, Last, Takt, Kernspannung und Stromversorgung" width="540" height="1200">
+    </div>
+  </section>
+
+  <section aria-labelledby="funktionen">
+    <div class="section-head"><h2 id="funktionen">Funktionen</h2><small>direkt per SSH, ohne Cloud</small></div>
+    <div class="grid">
+      <div class="card"><div class="ico" aria-hidden="true">🗂️</div><h3>Übersicht nach Standort</h3>
+        <p>Jeder neu eingetragene Pi landet sofort als Karte in der Übersicht – gruppiert nach Raum, filterbar, durchsuchbar nach Name, IP, Seriennummer oder MAC.</p></div>
+      <div class="card"><div class="ico" aria-hidden="true">📍</div><h3>Wiederfinden</h3>
+        <p>Standort in Ebenen („Keller › Rack › oben“) mit Vorschlägen, eine Notiz „So findest du ihn“ und ein Foto vom Einbauort. Modell, Seriennummer und MAC werden gemerkt – auch wenn sich die IP ändert.</p></div>
+      <div class="card"><div class="ico" aria-hidden="true">⚡</div><h3>Unterspannung &amp; Drosselung</h3>
+        <p>Liest <code>vcgencmd get_throttled</code> aus und sagt im Klartext, ob der Pi gerade zu wenig Strom bekommt oder seit dem Booten gedrosselt wurde.</p></div>
+      <div class="card"><div class="ico" aria-hidden="true">🌡️</div><h3>Zustand auf einen Blick</h3>
+        <p>Temperatur, Last, Takt, Kernspannung, Lüfter, Laufzeit, RAM, Swap, Datenträger, Netzwerk mit WLAN-Signal, Betriebssystem, Kernel und Firmware.</p></div>
+      <div class="card"><div class="ico" aria-hidden="true">📦</div><h3>Updates &amp; Neustart</h3>
+        <p>Zeigt ausstehende apt-Updates und ob ein Neustart nötig ist. Neu starten oder herunterfahren geht direkt aus der App – mit Rückfrage.</p></div>
+      <div class="card"><div class="ico" aria-hidden="true">🔐</div><h3>Sicher gespeichert</h3>
+        <p>Passwörter und Schlüssel liegen verschlüsselt im Android-Keystore. Der Host-Schlüssel jedes Pi wird gemerkt; ändert er sich, blockiert die App die Verbindung.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="einrichten">
+    <div class="section-head"><h2 id="einrichten">Einrichten</h2><small>in einer Minute</small></div>
+    <div class="split">
+      <img src="assets/screen-add.png" alt="Raspi hinzufügen: Host, Benutzer, Port, Passwort, Verbindungstest mit erkanntem Modell und Host-Schlüssel" width="540" height="1200">
+      <div class="card"><h3>Host, Anmeldung, Standort – fertig</h3>
+        <ol>
+          <li>„Raspi hinzufügen“ antippen.</li>
+          <li>Host oder IP (z. B. <code>raspberrypi.local</code>), Benutzer und Passwort eingeben – oder einen SSH-Schlüssel aus einer Datei bzw. der Zwischenablage laden.</li>
+          <li>„Verbindung testen“: Die App zeigt Modell, Hostname, Betriebssystem und den Fingerprint des Host-Schlüssels, der ab jetzt geprüft wird.</li>
+          <li>Standort, Notiz und ggf. Foto eintragen, speichern – der Pi erscheint in der Übersicht.</li>
+        </ol>
+        <p style="margin-top:10px">Funktioniert auch mit anderen Linux-Rechnern mit SSH; Pi-spezifische Werte bleiben dann einfach leer.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="herkunft">
+    <div class="section-head"><h2 id="herkunft">Herkunft</h2><small><a href="https://github.com/fotonaut/checkmyraspi">Quellcode auf GitHub</a></small></div>
+    <div class="card">
+      <p>CheckMyRaspi ist ein Neubau von <a href="https://github.com/eidottermihi/rpicheck">RasPi Check</a> von Michael Prankl (MIT-Lizenz), das seit 2023 nicht mehr gepflegt wird. Die Idee und die Abfragen stammen von dort; App, Oberfläche und Speicherung sind neu geschrieben.</p>
+      <div class="tbl" style="margin-top:14px">
+        <table>
+          <tr><th></th><th>RasPi Check</th><th>CheckMyRaspi</th></tr>
+          <tr><td>Übersicht</td><td>Auswahlliste in der Kopfzeile</td><td>Karten nach Standort, Suche, Filter</td></tr>
+          <tr><td>Standort</td><td>–</td><td>Ebenen, Notiz, Foto</td></tr>
+          <tr><td>Zugangsdaten</td><td>Klartext in der Datenbank</td><td>verschlüsselt (Android-Keystore), nicht im Backup</td></tr>
+          <tr><td>Host-Schlüssel</td><td>jeder akzeptiert</td><td>beim ersten Mal gemerkt, Änderung wird blockiert</td></tr>
+          <tr><td>Abfrage</td><td>rund 15 SSH-Sitzungen</td><td>eine Sitzung</td></tr>
+          <tr><td>Unterspannung, Updates</td><td>–</td><td>ja</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="datenschutz">
+    <div class="section-head"><h2 id="datenschutz">Datenschutz</h2><small><a href="datenschutz.html">Details</a></small></div>
+    <div class="two">
+      <div class="card"><h3>Was die App nicht tut</h3>
+        <ul><li>kein Konto, keine Registrierung</li><li>keine Werbung, keine Tracker, keine Analyse</li>
+          <li>keine Cloud – die App spricht nur mit den Geräten, die du einträgst</li>
+          <li>Passwörter und Schlüssel landen nie im Backup</li></ul></div>
+      <div class="card"><h3>Berechtigungen</h3>
+        <ul><li><strong>Internet / Netzwerkstatus</strong> – SSH-Verbindungen zu deinen eigenen Geräten</li>
+          <li>Keine Kamera-Berechtigung: Standortfotos nimmt die Kamera-App auf, die Galerie-Auswahl braucht keine Freigabe</li></ul></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="installation" id="installation">
+    <div class="section-head"><h2>Installation</h2><small>APK-Datei</small></div>
+    <div class="two">
+      <div class="card"><h3>So geht’s</h3>
+        <ol>
+          <li>APK auf dem Android-Gerät herunterladen.</li>
+          <li>Datei antippen. Beim ersten Mal fragt Android, ob der Browser bzw. Dateimanager Apps installieren darf – „Zulassen“ wählen.</li>
+          <li>„Installieren“ antippen und CheckMyRaspi öffnen.</li>
+          <li>Auf dem Pi muss SSH aktiv sein (Raspberry Pi Imager → „SSH aktivieren“ oder <code>sudo raspi-config</code>).</li>
+        </ol></div>
+      <div class="card"><h3>Prüfsumme kontrollieren</h3>
+        <p>Optional die SHA-256-Prüfsumme der Datei mit dem Wert oben vergleichen:</p>
+        <pre>sha256sum checkmyraspi-*.apk</pre>
+        <p style="margin-top:10px">Für Neustart und Herunterfahren braucht der Benutzer sudo-Rechte. Ohne eigenes sudo-Passwort verwendet die App das Login-Passwort bzw. sudo ohne Passwort.</p>
+        <p style="margin-top:10px">Updates werden einfach über die bestehende App installiert; Geräte und Zugangsdaten bleiben erhalten.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="anforderungen">
+    <div class="section-head"><h2 id="anforderungen">Mindestanforderungen</h2></div>
+    <div class="card"><ul>
+      <li>Android 8 (API 26) oder neuer, Smartphone oder Tablet (mehrspaltige Übersicht)</li>
+      <li>Raspberry Pi oder anderer Linux-Rechner mit SSH im selben Netz (oder per VPN erreichbar)</li>
+      <li>Keine Google-Play-Dienste nötig</li>
+    </ul></div>
+  </section>
+
+  <section aria-labelledby="changelog">
+    <div class="section-head"><h2 id="changelog">Changelog</h2></div>
+    <div class="card release">
+      <h3>1.0.0 <small>16. November 2026</small></h3>
+      <ul>
+        <li>Erste Veröffentlichung: Übersicht nach Standort mit Suche und Filter, Standort mit Notiz und Foto, Erkennung über Modell, Seriennummer und MAC, Zustand inkl. Unterspannung, Speicher, Netzwerk und apt-Updates, verschlüsselte Zugangsdaten, Prüfung des Host-Schlüssels, Neustart und Herunterfahren.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 mchwrk · <a href="https://mchwrk.de">mchwrk.de</a></span>
+    <nav>
+      <a href="datenschutz.html">Datenschutz (App)</a>
+      <a href="https://mchwrk.de/impressum.html">Impressum</a>
+      <a href="https://mchwrk.de/datenschutz.html">Datenschutz (Website)</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>

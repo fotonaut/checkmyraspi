@@ -1,0 +1,9 @@
+{
+  "versionName": "1.0.0",
+  "versionCode": 1,
+  "date": "2026-11-16",
+  "minSdk": 26,
+  "apk": "downloads/checkmyraspi-1.0.0.apk",
+  "sizeBytes": 5009907,
+  "sha256": "c26fc9b5efc3948dda6e2cdff7737e158e57732f952173ab036993921217561b"
+}

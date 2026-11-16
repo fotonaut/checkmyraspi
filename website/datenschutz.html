@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Datenschutz – CheckMyRaspi</title>
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/style.css?v=1">
+</head>
+<body class="legal">
+<header><div class="wrap"><a class="brand" href="./"><span class="brand-mark">m</span>mchwrk · CheckMyRaspi</a></div></header>
+<main class="wrap">
+  <h1>Datenschutz in der App</h1>
+  <p>Diese Erklärung betrifft die Android-App „CheckMyRaspi“. Für diese Website gilt die <a href="https://mchwrk.de/datenschutz.html">Datenschutzerklärung von mchwrk.de</a>.</p>
+
+  <h2>Grundsatz</h2>
+  <p>Die App kommt ohne Benutzerkonto, Werbung, Analyse- oder Tracking-Dienste aus. Sie baut ausschließlich SSH-Verbindungen zu den Geräten auf, die du selbst einträgst. Es gibt keinen Server von mchwrk, an den Daten gehen.</p>
+
+  <h2>Lokal gespeicherte Daten</h2>
+  <ul>
+    <li><strong>Geräteliste</strong> (Name, Host, Port, Benutzer, Standort, Notizen, Modell, Seriennummer, MAC, Fingerprint des Host-Schlüssels) und <strong>Standortfotos</strong> liegen im privaten App-Speicher. Sie dürfen ins Android-Backup, damit sie bei einem Gerätewechsel erhalten bleiben.</li>
+    <li><strong>Passwörter, private Schlüssel und Passphrasen</strong> werden mit AES-256-GCM verschlüsselt; der Schlüssel liegt im Android-Keystore und verlässt das Gerät nicht. Diese Daten sind vom Backup ausgenommen.</li>
+    <li><strong>Zuletzt abgefragte Messwerte</strong> werden zwischengespeichert, damit die Übersicht auch offline etwas zeigt; sie sind ebenfalls vom Backup ausgenommen.</li>
+    <li>Beim Deinstallieren wird alles gelöscht.</li>
+  </ul>
+
+  <h2>Was auf deinen Geräten passiert</h2>
+  <p>Zum Abfragen führt die App per SSH ein Skript aus, das nur liest (z. B. <code>/proc</code>, <code>vcgencmd</code>, <code>df</code>, <code>apt list --upgradable</code>). Schreibende Befehle gibt es nur für Neustart und Herunterfahren – und nur nach deiner Bestätigung.</p>
+
+  <h2>Berechtigungen</h2>
+  <ul>
+    <li><code>INTERNET</code>, <code>ACCESS_NETWORK_STATE</code>: SSH-Verbindungen zu deinen Geräten.</li>
+  </ul>
+  <p>Standortfotos nimmt die Kamera-App des Systems auf bzw. du wählst sie über die Fotoauswahl; dafür braucht CheckMyRaspi keine eigene Kamera- oder Speicher-Berechtigung. Standort (GPS), Kontakte und Mikrofon werden nicht verwendet.</p>
+
+  <h2>Verantwortlich</h2>
+  <p>Siehe <a href="https://mchwrk.de/impressum.html">Impressum von mchwrk.de</a>.</p>
+  <p class="muted">Stand: November 2026</p>
+</main>
+<footer><div class="wrap"><span>© 2026 mchwrk</span><nav><a href="./">Zur Downloadseite</a><a href="https://mchwrk.de/impressum.html">Impressum</a></nav></div></footer>
+</body>
+</html>
