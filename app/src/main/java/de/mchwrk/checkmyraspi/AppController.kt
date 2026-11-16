@@ -1,6 +1,9 @@
 package de.mchwrk.checkmyraspi
 
 import de.mchwrk.checkmyraspi.data.AuthType
+import de.mchwrk.checkmyraspi.data.CommandLine
+import de.mchwrk.checkmyraspi.data.CommandStore
+import de.mchwrk.checkmyraspi.data.QuickCommand
 import de.mchwrk.checkmyraspi.data.Device
 import de.mchwrk.checkmyraspi.data.DeviceRepository
 import de.mchwrk.checkmyraspi.data.DeviceSecrets
@@ -18,7 +21,9 @@ import de.mchwrk.checkmyraspi.ssh.RaspiClient
 import de.mchwrk.checkmyraspi.ssh.SshAuth
 import de.mchwrk.checkmyraspi.ssh.SshFailure
 import de.mchwrk.checkmyraspi.ssh.SshTarget
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -36,6 +41,7 @@ class AppController(
     val snapshots: SnapshotStore,
     private val secrets: SecretStore,
     val photos: Photos,
+    val commands: CommandStore,
     private val client: RaspiClient,
     private val scope: CoroutineScope,
     private val now: () -> Long = System::currentTimeMillis,
@@ -50,6 +56,11 @@ class AppController(
     val hostKeyChanges: StateFlow<Map<String, HostKey>> = _hostKeyChanges.asStateFlow()
 
     private var lastAutoRefresh = 0L
+
+    /** Laufende bzw. letzte Befehlsausführung je Gerät (überlebt das Verlassen des Bildschirms). */
+    private val _runs = MutableStateFlow<Map<String, CommandRun>>(emptyMap())
+    val runs: StateFlow<Map<String, CommandRun>> = _runs.asStateFlow()
+    private val runJobs = mutableMapOf<String, Job>()
 
     /** Beim Öffnen der Übersicht: höchstens einmal pro Minute alle abfragen. */
     fun refreshAllIfStale(maxAgeMs: Long = 60_000) {
@@ -104,6 +115,7 @@ class AppController(
         passphrase = passphrase,
         app = "CheckMyRaspi ${de.mchwrk.checkmyraspi.BuildConfig.VERSION_NAME}",
         now = now(),
+        commands = commands.commands.value,
     )
 
     fun previewImport(text: String): ImportPreview = Transfer.parse(text)
@@ -123,6 +135,7 @@ class AppController(
                 if (sec != null) secrets.put(d.id, sec)
             },
         )
+        if (preview.file.commands.isNotEmpty()) commands.merge(preview.file.commands)
         refreshAll()
         return result
     }
@@ -196,14 +209,66 @@ class AppController(
     suspend fun power(id: String, action: PowerAction) {
         val d = devices.get(id) ?: return
         val s = secrets.get(id)
-        val sudo = s.sudoPassword?.takeIf { it.isNotEmpty() }
-            ?: s.password.takeIf { d.authType == AuthType.PASSWORD }
-        client.power(target(d, s), action, sudo)
+        client.power(target(d, s), action, sudoPassword(d, s))
         snapshots.update(id) { it.copy(reachability = Reachability.OFFLINE, message = when (action) {
             PowerAction.REBOOT -> "Neustart ausgelöst"
             PowerAction.SHUTDOWN -> "Heruntergefahren"
         }, checkedAt = now()) }
     }
+
+    /** sudo-Passwort: eigenes, sonst das Login-Passwort. */
+    private fun sudoPassword(d: Device, s: DeviceSecrets): String? =
+        s.sudoPassword?.takeIf { it.isNotEmpty() } ?: s.password.takeIf { d.authType == AuthType.PASSWORD }
+
+    /**
+     * Führt einen Befehl aus; die Ausgabe erscheint fortlaufend in [runs]. Pro Gerät läuft höchstens einer.
+     * @param value Wert für `{}` im Befehl
+     */
+    fun runCommand(id: String, cmd: QuickCommand, value: String? = null): Boolean {
+        val d = devices.get(id) ?: return false
+        if (runJobs[id]?.isActive == true) return false
+        val line = CommandLine.fill(cmd.command, value)
+        val shown = if (cmd.needsValue) "${cmd.label.removeSuffix(" …")}: ${value?.trim()}" else cmd.label
+        _runs.update { it + (id to CommandRun(shown, line, cmd.sudo, startedAt = now())) }
+        fun patch(f: (CommandRun) -> CommandRun) = _runs.update { m -> m[id]?.let { m + (id to f(it)) } ?: m }
+        runJobs[id] = scope.launch {
+            try {
+                val s = secrets.get(id)
+                val r = client.exec(target(d, s), line, cmd.sudo, sudoPassword(d, s)) { chunk ->
+                    patch { it.copy(output = it.output + chunk) }
+                }
+                patch { it.copy(running = false, exitCode = r.exitCode, truncated = r.truncated, finishedAt = now()) }
+            } catch (e: CancellationException) {
+                patch { it.copy(running = false, error = "Abgebrochen", finishedAt = now()) }
+                throw e
+            } catch (e: Exception) {
+                patch { it.copy(running = false, error = e.message ?: e.javaClass.simpleName, finishedAt = now()) }
+            }
+        }
+        return true
+    }
+
+    fun cancelCommand(id: String) { runJobs[id]?.cancel() }
+
+    fun clearRun(id: String) {
+        if (runJobs[id]?.isActive == true) return
+        _runs.update { it - id }
+    }
+}
+
+data class CommandRun(
+    val label: String,
+    val command: String,
+    val sudo: Boolean,
+    val output: String = "",
+    val running: Boolean = true,
+    val exitCode: Int? = null,
+    val truncated: Boolean = false,
+    val error: String? = null,
+    val startedAt: Long = 0,
+    val finishedAt: Long = 0,
+) {
+    val ok get() = !running && error == null && exitCode == 0
 }
 
 private typealias Snapshot = de.mchwrk.checkmyraspi.data.Snapshot

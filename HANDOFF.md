@@ -39,7 +39,7 @@
 ## Ideen für die nächsten Versionen
 1. QR-Etikett zum Aufkleben → öffnet den Eintrag direkt.
 2. Netzwerksuche (mDNS `*.local`, Port-22-Scan) zum schnellen Eintragen.
-3. Eigene Befehle (wie in RasPi Check) + Vorlagen (`apt upgrade`, Dienst neu starten).
+3. ~~Eigene Befehle + Vorlagen~~ → erledigt als „Befehle“ (Stufe 1, ui/CommandsScreen.kt, data/Commands.kt). Stufe 2: echtes Terminal (Termux terminal-view + sshj-PTY) als eigenes Gradle-Modul `:terminal`; vorher Spike gegen tools/fakepi.
 4. Schlüsselpaar in der App erzeugen, Public Key teilen.
 5. Hintergrundprüfung (WorkManager) mit Benachrichtigung bei offline/heiß/Unterspannung; Verlauf als Diagramm.
 6. Widget; Export/Import der Geräteliste (ohne Geheimnisse); Docker-Container-Liste; GPS für Außenstandorte.

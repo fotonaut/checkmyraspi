@@ -35,8 +35,12 @@ class MainActivity : ComponentActivity() {
                         DeviceScreen(
                             c, id,
                             onEdit = { nav.navigate("edit?id=$id") },
+                            onCommands = { nav.navigate("commands/$id") },
                             onBack = { nav.popBackStack() },
                         )
+                    }
+                    composable("commands/{id}", arguments = listOf(navArgument("id") { type = NavType.StringType })) { e ->
+                        CommandsScreen(c, e.arguments?.getString("id").orEmpty(), onBack = { nav.popBackStack() })
                     }
                     composable(
                         "edit?id={id}",

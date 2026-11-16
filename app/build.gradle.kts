@@ -7,8 +7,8 @@ plugins {
 }
 
 // Versionierung: nur hier pflegen.
-val appVersionCode = 3
-val appVersionName = "1.1.0"
+val appVersionCode = 4
+val appVersionName = "1.2.0"
 
 // Optionale Release-Signatur: `keystore.properties` im Projektwurzelverzeichnis
 // (git-ignored) mit storeFile / storePassword / keyAlias / keyPassword.

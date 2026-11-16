@@ -38,11 +38,11 @@
       <p class="lead">CheckMyRaspi fragt deine Raspberry Pis per SSH ab und zeigt sie in einer Übersicht – sortiert nach Standort, mit Foto und Notiz. So siehst du sofort, welcher Pi zu heiß läuft, zu wenig Strom bekommt oder Updates braucht. Und du weißt, wo du ihn findest.</p>
       <!-- release:begin -->
       <div class="cta">
-        <a class="btn primary" href="downloads/checkmyraspi-1.1.0.apk" download>⬇ APK herunterladen</a>
+        <a class="btn primary" href="downloads/checkmyraspi-1.2.0.apk" download>⬇ APK herunterladen</a>
         <a class="btn secondary" href="#installation">Installation</a>
       </div>
-      <p class="meta">Version 1.1.0 · 16. November 2026 · 5,0 MB · Android 8 oder neuer</p>
-      <p class="meta">SHA-256: <code class="hash">7527851e471c10c7cc143bbd06f37c665cd2311444949ebb57d1e0dcfd0d3f2d</code></p>
+      <p class="meta">Version 1.2.0 · 16. November 2026 · 5,1 MB · Android 8 oder neuer</p>
+      <p class="meta">SHA-256: <code class="hash">8baa98ba28000cdb6036d428a6e80e1bf373e0d3b04fd9acd1af2cf71379ebec</code></p>
       <!-- release:end -->
     </div>
     <div class="shots">
@@ -64,6 +64,8 @@
         <p>Temperatur, Last, Takt, Kernspannung, Lüfter, Laufzeit, RAM, Swap, Datenträger, Netzwerk mit WLAN-Signal, Betriebssystem, Kernel und Firmware.</p></div>
       <div class="card"><div class="ico" aria-hidden="true">📦</div><h3>Updates &amp; Neustart</h3>
         <p>Zeigt ausstehende apt-Updates und ob ein Neustart nötig ist. Neu starten oder herunterfahren geht direkt aus der App – mit Rückfrage.</p></div>
+      <div class="card"><div class="ico" aria-hidden="true">⌨️</div><h3>Direkt eingreifen</h3>
+        <p>Schnellbefehle wie „Fehlerhafte Dienste“, „Fehler seit dem Start“ oder „Dienst neu starten“, eigene Befehle (auch mit sudo) und die Ausgabe live in der App. Für mehr öffnet ein Tipp den Pi in deiner SSH-App.</p></div>
       <div class="card"><div class="ico" aria-hidden="true">🔐</div><h3>Sicher gespeichert</h3>
         <p>Passwörter und Schlüssel liegen verschlüsselt im Android-Keystore. Der Host-Schlüssel jedes Pi wird gemerkt; ändert er sich, blockiert die App die Verbindung.</p></div>
     </div>
@@ -145,6 +147,15 @@
 
   <section aria-labelledby="changelog">
     <div class="section-head"><h2 id="changelog">Changelog</h2></div>
+    <div class="card release">
+      <h3>1.2.0 <small>16. November 2026</small></h3>
+      <ul>
+        <li>Neu: „Befehle“ auf der Geräteseite – Schnellbefehle zum Nachsehen (fehlerhafte Dienste, Fehler im Journal, Kernel-Meldungen, Speicherplatz, Prozesse, Stromversorgung, Netzwerk, Dienst-Status und -Log) und zum Eingreifen (Dienst neu starten, Paketlisten aktualisieren, Paket-Cache leeren, Journal kürzen). Die Ausgabe erscheint live, lässt sich abbrechen und kopieren.</li>
+        <li>Eigene Befehle frei eingeben (wahlweise mit sudo) und merken; <code>{}</code> fragt beim Ausführen einen Wert ab. Gemerkte Befehle wandern mit in den Export.</li>
+        <li>„SSH-App“: öffnet den Pi mit einem Tipp in einer installierten SSH-App wie ConnectBot.</li>
+        <li>Hängt der SSH-Dienst eines Pi, sagt die App das nach 30 Sekunden im Klartext statt endlos zu warten.</li>
+      </ul>
+    </div>
     <div class="card release">
       <h3>1.1.0 <small>16. November 2026</small></h3>
       <ul>

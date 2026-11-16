@@ -202,4 +202,10 @@ class StatusScriptTest {
         assertThat(Fingerprints.sha256("abc".toByteArray()))
             .isEqualTo("SHA256:ungWv48Bz+pBQUDeXa4iI7ADYaOWF3qctBD/YfIAFa0")
     }
+
+    @Test fun `hanging ssh read timeout gets a plain message`() {
+        val m = transportMessage(java.io.IOException("x", java.net.SocketTimeoutException("Read timed out")))
+        assertThat(m).startsWith("SSH antwortet nicht")
+        assertThat(transportMessage(java.io.IOException("Broken pipe"))).isEqualTo("Verbindungsfehler: Broken pipe")
+    }
 }

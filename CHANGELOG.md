@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.0 – 16. November 2026
+
+- **Befehle:** Schnellbefehle zum Nachsehen (fehlerhafte Dienste, Fehler im Journal, Kernel-Meldungen, Speicherplatz, Prozesse, Stromversorgung, Netzwerk, Dienst-Status/-Log) und Eingreifen (Dienst neu starten, Paketlisten aktualisieren, Paket-Cache leeren, Journal kürzen) – Ausgabe live in der App, abbrechbar, kopierbar.
+- Freie Befehlseingabe (optional mit sudo) und gemerkte eigene Befehle; `{}` fragt beim Ausführen einen Wert ab (shell-sicher gequotet). Eigene Befehle wandern mit in den Export.
+- **SSH-App:** Gerät mit einem Tipp in einer installierten SSH-App (ConnectBot, JuiceSSH …) öffnen.
+- Hängt der SSH-Dienst eines Geräts (Port offen, aber keine Antwort), meldet die App das nach 30 s im Klartext.
+
 ## 1.1.0 – 16. November 2026
 
 - Export/Import der Geräteliste (inkl. Standort, Notizen, Fotos); Zugangsdaten optional, mit Passphrase verschlüsselt.

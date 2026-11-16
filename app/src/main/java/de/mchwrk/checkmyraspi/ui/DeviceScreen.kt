@@ -20,6 +20,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Terminal
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Place
@@ -73,7 +77,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun DeviceScreen(c: AppController, id: String, onEdit: () -> Unit, onBack: () -> Unit) {
+fun DeviceScreen(c: AppController, id: String, onEdit: () -> Unit, onCommands: () -> Unit, onBack: () -> Unit) {
     val devices by c.devices.devices.collectAsState()
     val snapshots by c.snapshots.snapshots.collectAsState()
     val refreshing by c.refreshing.collectAsState()
@@ -81,6 +85,7 @@ fun DeviceScreen(c: AppController, id: String, onEdit: () -> Unit, onBack: () ->
     val device = devices.firstOrNull { it.id == id }
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     var menu by remember { mutableStateOf(false) }
     var confirmPower by remember { mutableStateOf<PowerAction?>(null) }
@@ -146,6 +151,18 @@ fun DeviceScreen(c: AppController, id: String, onEdit: () -> Unit, onBack: () ->
                     StatusDot(reach)
                     Spacer(Modifier.width(8.dp))
                     Text(statusLine(snap, System.currentTimeMillis()), style = MaterialTheme.typography.bodyMedium, color = reachColor(reach))
+                }
+
+                // Eingreifen: Schnellbefehle oder eigene SSH-App
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = onCommands) {
+                        Icon(Icons.Outlined.Terminal, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Befehle")
+                    }
+                    OutlinedButton(onClick = {
+                        if (!openInSshApp(context, device)) scope.launch { snackbar.showSnackbar(NO_SSH_APP) }
+                    }) {
+                        Icon(Icons.AutoMirrored.Outlined.OpenInNew, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("SSH-App")
+                    }
                 }
 
                 if (newKey != null) {

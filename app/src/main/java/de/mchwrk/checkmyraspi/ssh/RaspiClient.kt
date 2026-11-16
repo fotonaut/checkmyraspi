@@ -1,10 +1,15 @@
 package de.mchwrk.checkmyraspi.ssh
 
+import de.mchwrk.checkmyraspi.data.CommandLine
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import net.schmizz.sshj.AndroidConfig
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.common.Buffer
+import net.schmizz.keepalive.KeepAliveProvider
 import net.schmizz.sshj.common.KeyType
 import net.schmizz.sshj.connection.ConnectionException
 import net.schmizz.sshj.connection.channel.direct.Session
@@ -43,6 +48,9 @@ data class HostKey(val type: String, val fingerprint: String)
 
 data class QueryResult(val hostKey: HostKey, val status: RaspiStatus)
 
+/** Ergebnis eines Befehls; exitCode null = unbekannt (Verbindung vorher beendet). */
+data class ExecResult(val exitCode: Int?, val truncated: Boolean)
+
 enum class PowerAction(val command: String) {
     REBOOT("shutdown -r now"),
     SHUTDOWN("shutdown -h now"),
@@ -57,7 +65,14 @@ sealed class SshFailure(message: String, cause: Throwable? = null) : Exception(m
     class HostKeyChanged(val expected: String, val actual: HostKey) :
         SshFailure("Host-Schlüssel hat sich geändert! Erwartet $expected, erhalten ${actual.fingerprint}.")
     class SudoFailed(detail: String) : SshFailure("Befehl fehlgeschlagen: $detail")
-    class Transport(cause: Throwable) : SshFailure("Verbindungsfehler: ${cause.message ?: cause.javaClass.simpleName}", cause)
+    class Transport(cause: Throwable) : SshFailure(transportMessage(cause), cause)
+}
+
+/** Verbindung steht, aber SSH antwortet nicht mehr (z. B. hängender sshd) → Klartext statt „Read timed out“. */
+internal fun transportMessage(cause: Throwable): String {
+    val timedOut = generateSequence(cause) { it.cause }.any { it is SocketTimeoutException || it.message?.contains("timed out", true) == true }
+    return if (timedOut) "SSH antwortet nicht (Zeitüberschreitung) – Gerät überlastet oder SSH-Dienst hängt? Ggf. Strom aus/ein."
+    else "Verbindungsfehler: ${cause.message ?: cause.javaClass.simpleName}"
 }
 
 /** Übersetzt Socket-Fehler in Klartext; die aufgelöste IP hilft beim Wiederfinden. */
@@ -111,6 +126,7 @@ class RaspiClient(
     private val connectTimeoutMs: Int = 8_000,
     private val commandTimeoutSec: Long = 30,
 ) {
+    private companion object { const val KEEPALIVE_SEC = 10 }
 
     /**
      * Verbindet, liest den Status und trennt wieder.
@@ -156,6 +172,61 @@ class RaspiClient(
             }
         }
 
+    /**
+     * Führt einen Befehl aus und liefert die Ausgabe (stdout + stderr) stückweise an [onOutput].
+     * Abbrechen der Coroutine trennt die Verbindung sofort.
+     * @param sudo mit `sudo`; das Passwort geht über stdin ([sudoPassword] null → `sudo -n`).
+     */
+    suspend fun exec(
+        target: SshTarget,
+        command: String,
+        sudo: Boolean,
+        sudoPassword: String?,
+        maxOutput: Int = CommandLine.MAX_OUTPUT,
+        onOutput: (String) -> Unit,
+    ): ExecResult = try {
+        execBlocking(target, command, sudo, sudoPassword, maxOutput, onOutput)
+    } catch (e: SshFailure) {
+        currentCoroutineContext().ensureActive() // abgebrochen → CancellationException statt Verbindungsfehler
+        throw e
+    }
+
+    private suspend fun execBlocking(
+        target: SshTarget,
+        command: String,
+        sudo: Boolean,
+        sudoPassword: String?,
+        maxOutput: Int,
+        onOutput: (String) -> Unit,
+    ): ExecResult = runInterruptible(Dispatchers.IO) {
+        connected(target, acceptUnknownHostKey = false, longRunning = true) { client, _ ->
+            client.startSession().use { session ->
+                val withPw = sudo && !sudoPassword.isNullOrEmpty()
+                val cmd = session.exec(CommandLine.wrap(command, sudo, withPw))
+                if (withPw) cmd.outputStream.write((sudoPassword + "\n").toByteArray())
+                cmd.outputStream.close()
+                val reader = cmd.inputStream.reader(Charsets.UTF_8)
+                val buf = CharArray(4096)
+                var total = 0
+                var truncated = false
+                while (true) {
+                    val n = reader.read(buf)
+                    if (n < 0) break
+                    if (total >= maxOutput) { truncated = true; continue } // weiterlesen, damit der Befehl nicht hängt
+                    val take = minOf(n, maxOutput - total)
+                    total += take
+                    onOutput(String(buf, 0, take))
+                    if (take < n) truncated = true
+                }
+                val err = cmd.errorStream.bufferedReader().readText()
+                cmd.join(5, TimeUnit.SECONDS)
+                val status = cmd.exitStatus
+                if (status != 0 && err.isNotBlank()) onOutput(err.trim().lineSequence().last() + "\n")
+                ExecResult(status, truncated)
+            }
+        }
+    }
+
     private fun runScript(session: Session, script: String): String {
         val cmd = session.exec("sh -s")
         cmd.outputStream.write(script.toByteArray())
@@ -168,12 +239,19 @@ class RaspiClient(
     private fun <T> connected(
         target: SshTarget,
         acceptUnknownHostKey: Boolean,
+        longRunning: Boolean = false,
         block: (SSHClient, HostKey) -> T,
     ): T {
         val verifier = TofuVerifier(target.knownFingerprint, acceptUnknownHostKey)
-        val client = SSHClient(AndroidConfig())
+        val config = AndroidConfig()
+        // Befehle dürfen lange still sein (apt-get update): keepalive@openssh.com wird vom Server beantwortet,
+        // dadurch kommen regelmäßig Daten und der Socket-Timeout greift nur bei wirklich toter Verbindung.
+        // Verbindungsaufbau und Anmeldung behalten den normalen Timeout (hängender sshd → Fehler statt ewig warten).
+        if (longRunning) config.keepAliveProvider = KeepAliveProvider.KEEP_ALIVE
+        val client = SSHClient(config)
         client.connectTimeout = connectTimeoutMs
         client.timeout = (commandTimeoutSec * 1000).toInt()
+        if (longRunning) client.connection.keepAlive.keepAliveInterval = KEEPALIVE_SEC
         client.addHostKeyVerifier(verifier)
         try {
             try {

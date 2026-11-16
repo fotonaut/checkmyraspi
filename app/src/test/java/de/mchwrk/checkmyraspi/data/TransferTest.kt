@@ -75,6 +75,15 @@ class TransferTest {
         assertThat(stored.values.filterNotNull()).isEmpty()
     }
 
+    @Test fun `custom commands travel with the export`() {
+        val dir = tmp.newFolder("p2")
+        val cmd = QuickCommand("c1", "Pihole", "pihole status", sudo = true)
+        val p = Transfer.parse(Transfer.export(listOf(d2), { secrets.getValue(it) }, dir, null, "test", 1, listOf(cmd)))
+        assertThat(p.file.commands).containsExactly(cmd)
+        // Alte Dateien ohne Befehle bleiben lesbar.
+        assertThat(Transfer.parse(export(null)).file.commands).isEmpty()
+    }
+
     @Test fun `foreign files are rejected`() {
         assertThat(runCatching { Transfer.parse("{\"hello\":1}") }.exceptionOrNull()).isInstanceOf(TransferException::class.java)
         assertThat(runCatching { Transfer.parse("kein json") }.exceptionOrNull()).isInstanceOf(TransferException::class.java)

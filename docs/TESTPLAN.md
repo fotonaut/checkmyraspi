@@ -25,3 +25,11 @@
 - [ ] Standortfoto per Kamera-App und Galerie.
 - [ ] Neustart/Herunterfahren mit sudo-Passwort und mit NOPASSWD.
 - [ ] Dunkles Design, Tablet-Layout (mehrspaltige Übersicht).
+
+## Befehle (Stufe 1)
+- Gerät → „Befehle“: „Größte Verzeichnisse in /var“ (sudo) liefert Ausgabe; sudo-Passwort = Login-Passwort, wenn kein eigenes.
+- Freier Befehl `echo a; ls /nicht-da` → Ausgabe inkl. Fehlermeldung, „Exit-Code 1“.
+- „Dienst neu starten …“ mit Wert `sshd'x` → Bestätigung, Wert gequotet; im Alpine-Container „systemctl: not found“, Exit 127.
+- „Neuer Befehl“ → speichern → erscheint unter „Gemerkte Befehle“ und läuft.
+- „SSH-App“ ohne installierte App → Snackbar „Keine SSH-App gefunden …“.
+- Abbrechen: in RaspiClientIntegrationTest (`sleep 30` per Timeout) abgedeckt.

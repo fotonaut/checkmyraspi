@@ -29,6 +29,8 @@ data class ExportFile(
     /** Dateiname → JPEG als Base64. */
     val photos: Map<String, String> = emptyMap(),
     val secrets: EncryptedSecrets? = null,
+    /** Eigene Schnellbefehle (seit 1.2.0; ältere Dateien haben keine). */
+    val commands: List<QuickCommand> = emptyList(),
 ) {
     companion object { const val FORMAT = "checkmyraspi-export" }
 }
@@ -63,6 +65,7 @@ object Transfer {
         passphrase: String?,
         app: String,
         now: Long = System.currentTimeMillis(),
+        commands: List<QuickCommand> = emptyList(),
     ): String {
         val photos = devices.mapNotNull { d ->
             val name = d.photo ?: return@mapNotNull null
@@ -74,7 +77,7 @@ object Transfer {
             val map = devices.associate { it.id to secrets(it.id) }
             encrypt(json.encodeToString(map).encodeToByteArray(), pw)
         }
-        return json.encodeToString(ExportFile(exportedAt = now, app = app, devices = devices, photos = photos, secrets = enc))
+        return json.encodeToString(ExportFile(exportedAt = now, app = app, devices = devices, photos = photos, secrets = enc, commands = commands))
     }
 
     fun parse(text: String): ImportPreview {

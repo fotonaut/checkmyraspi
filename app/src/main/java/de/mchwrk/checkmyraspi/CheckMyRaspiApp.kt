@@ -1,6 +1,7 @@
 package de.mchwrk.checkmyraspi
 
 import android.app.Application
+import de.mchwrk.checkmyraspi.data.CommandStore
 import de.mchwrk.checkmyraspi.data.DeviceRepository
 import de.mchwrk.checkmyraspi.data.KeystoreCipher
 import de.mchwrk.checkmyraspi.data.Photos
@@ -29,6 +30,7 @@ class CheckMyRaspiApp : Application() {
             snapshots = SnapshotStore(File(noBackupFilesDir, "snapshots.json")),
             secrets = SecretStore(File(noBackupFilesDir, "secrets.bin"), KeystoreCipher()),
             photos = Photos(this),
+            commands = CommandStore(File(filesDir, "commands.json")),
             client = RaspiClient(),
             scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
         )
